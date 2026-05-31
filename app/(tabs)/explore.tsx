@@ -19,7 +19,7 @@ import {
 import { Text } from '@/components/ui/Text'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { EmptyMealsState, EstimateDisclaimer, SectionLabel } from '@/components/meal/MealUi'
+import { EmptyMealsState, EstimateDisclaimer } from '@/components/meal/MealUi'
 import {
     ACCENT,
     ACCENT_DIM,
@@ -73,37 +73,31 @@ export default function ExploreScreen() {
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
             showsVerticalScrollIndicator={false}
         >
+            {/* Header */}
             <View style={s.header}>
-                <View style={s.titleRow}>
-                    <Clock size={20} color={ACCENT} strokeWidth={2} />
-                    <Text style={s.title}>Meal History</Text>
-                </View>
-                <Text style={s.subtitle}>Every meal you&apos;ve analyzed with Cal AI</Text>
+                <Text style={s.title}>Meal History</Text>
+                <Text style={s.subtitle}>Every meal you have analyzed</Text>
             </View>
 
-            {stats ? (
+            {/* Stats Row */}
+            {stats && (
                 <View style={s.statsRow}>
                     <Card compact style={s.statCard}>
                         <Text style={s.statValue}>{stats.count}</Text>
                         <Text style={s.statLabel}>Meals</Text>
                     </Card>
                     <Card compact style={s.statCard}>
-                        <View style={s.statIconRow}>
-                            <Flame size={14} color={ACCENT} strokeWidth={2.2} />
-                            <Text style={s.statValue}>{stats.totalKcal}</Text>
-                        </View>
+                        <Text style={s.statValue}>{stats.totalKcal}</Text>
                         <Text style={s.statLabel}>Total kcal</Text>
                     </Card>
                     <Card compact style={s.statCard}>
-                        <View style={s.statIconRow}>
-                            <Sparkles size={14} color={ACCENT} strokeWidth={2.2} />
-                            <Text style={s.statValue}>{stats.avgConfidence}%</Text>
-                        </View>
-                        <Text style={s.statLabel}>Avg confidence</Text>
+                        <Text style={s.statValue}>{stats.avgConfidence}%</Text>
+                        <Text style={s.statLabel}>Confidence</Text>
                     </Card>
                 </View>
-            ) : null}
+            )}
 
+            {/* Meal List */}
             {meals.length === 0 ? (
                 <EmptyMealsState
                     icon={<Camera size={26} color={ACCENT} strokeWidth={2} />}
@@ -113,42 +107,35 @@ export default function ExploreScreen() {
                     onCta={() => router.push('/analyze')}
                 />
             ) : (
-                <>
-                    <SectionLabel title="All meals" subtitle={`${meals.length} saved`} />
-                    {meals.map((meal) => (
-                        <Pressable
-                            key={meal.id}
-                            onPress={() => router.push(`/result/${meal.id}`)}
-                            style={({ pressed }) => [pressed && { opacity: 0.85, transform: [{ scale: 0.99 }] }]}
-                        >
-                            <Card style={s.itemCard}>
-                                <View style={s.thumbWrap}>
-                                    <Image source={{ uri: meal.imageUri }} style={s.thumb} />
-                                    <View style={s.thumbBadge}>
-                                        <Flame size={10} color="#0d0d0d" strokeWidth={2.5} />
-                                        <Text style={s.thumbBadgeText}>{meal.totalCalories}</Text>
+                meals.map((meal) => (
+                    <Pressable
+                        key={meal.id}
+                        onPress={() => router.push(`/result/${meal.id}`)}
+                        style={({ pressed }) => [pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
+                    >
+                        <Card style={s.mealCard}>
+                            <Image source={{ uri: meal.imageUri }} style={s.thumb} />
+                            <View style={s.mealBody}>
+                                <Text style={s.mealName} numberOfLines={1}>{meal.mealName}</Text>
+                                <Text style={s.mealMeta}>{formatRelativeDate(meal.createdAt)}</Text>
+                                <View style={s.mealFooter}>
+                                    <View style={s.kcalBadge}>
+                                        <Flame size={12} color={ACCENT} strokeWidth={2.2} />
+                                        <Text style={s.kcalText}>{meal.totalCalories} kcal</Text>
                                     </View>
-                                </View>
-                                <View style={s.itemBody}>
-                                    <Text style={s.itemName} numberOfLines={1}>{meal.mealName}</Text>
-                                    <View style={s.metaRow}>
-                                        <Text style={s.itemMeta}>{formatRelativeDate(meal.createdAt)}</Text>
-                                        <Text style={s.itemDot}>·</Text>
-                                        <Text style={s.itemKcal}>{meal.totalCalories} kcal</Text>
-                                    </View>
-                                    <View style={s.confidencePill}>
+                                    <View style={s.confBadge}>
                                         <Sparkles size={10} color={ACCENT} strokeWidth={2.5} />
-                                        <Text style={s.confidenceText}>{meal.confidence}% confidence</Text>
+                                        <Text style={s.confText}>{meal.confidence}%</Text>
                                     </View>
                                 </View>
-                                <ChevronRight size={20} color={TEXT_TERTIARY} />
-                            </Card>
-                        </Pressable>
-                    ))}
-                </>
+                            </View>
+                            <ChevronRight size={18} color={TEXT_TERTIARY} />
+                        </Card>
+                    </Pressable>
+                ))
             )}
 
-            {meals.length > 0 ? (
+            {meals.length > 0 && (
                 <Button
                     label="Analyze New Meal"
                     variant="secondary"
@@ -156,7 +143,7 @@ export default function ExploreScreen() {
                     onPress={() => router.push('/analyze')}
                     style={{ marginTop: 4 }}
                 />
-            ) : null}
+            )}
 
             <EstimateDisclaimer />
         </ScrollView>
@@ -165,65 +152,39 @@ export default function ExploreScreen() {
 
 const s = StyleSheet.create({
     container: { paddingHorizontal: 20, gap: 14 },
-    header: { gap: 6, marginBottom: 2 },
-    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    title: { fontSize: 26, fontWeight: '800', color: TEXT_PRIMARY, letterSpacing: -0.6 },
-    subtitle: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 20 },
-    statsRow: { flexDirection: 'row', gap: 8 },
+    header: { gap: 4, marginBottom: 4 },
+    title: { fontSize: 28, fontWeight: '800', color: TEXT_PRIMARY, letterSpacing: -0.8 },
+    subtitle: { fontSize: 14, color: TEXT_SECONDARY },
+    statsRow: { flexDirection: 'row', gap: 10 },
     statCard: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 14 },
-    statIconRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    statValue: { fontSize: 18, fontWeight: '800', color: TEXT_PRIMARY },
-    statLabel: { fontSize: 11, color: TEXT_TERTIARY, fontWeight: '600' },
-    itemCard: {
+    statValue: { fontSize: 20, fontWeight: '800', color: TEXT_PRIMARY },
+    statLabel: { fontSize: 11, color: TEXT_SECONDARY, fontWeight: '600' },
+    mealCard: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 14,
-        padding: 14,
-        borderWidth: 1,
-        borderColor: BORDER,
+        padding: 12,
     },
-    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-    itemDot: { fontSize: 12, color: TEXT_TERTIARY },
-    itemKcal: { fontSize: 12, fontWeight: '700', color: ACCENT },
-    thumbWrap: { position: 'relative' },
     thumb: {
-        width: 72,
-        height: 72,
-        borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderWidth: 1,
-        borderColor: BORDER,
+        width: 64,
+        height: 64,
+        borderRadius: 14,
+        backgroundColor: '#F1F3F5',
     },
-    thumbBadge: {
-        position: 'absolute',
-        bottom: -6,
-        left: '50%',
-        transform: [{ translateX: -22 }],
+    mealBody: { flex: 1, gap: 4 },
+    mealName: { fontSize: 15, fontWeight: '700', color: TEXT_PRIMARY },
+    mealMeta: { fontSize: 12, color: TEXT_SECONDARY },
+    mealFooter: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 },
+    kcalBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    kcalText: { fontSize: 12, fontWeight: '700', color: ACCENT },
+    confBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 3,
-        backgroundColor: ACCENT,
-        borderRadius: 999,
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderWidth: 2,
-        borderColor: SURFACE,
-        minWidth: 44,
-        justifyContent: 'center',
-    },
-    thumbBadgeText: { fontSize: 11, fontWeight: '800', color: '#0d0d0d' },
-    itemBody: { flex: 1, gap: 5 },
-    itemName: { fontSize: 16, fontWeight: '700', color: TEXT_PRIMARY },
-    itemMeta: { fontSize: 12, color: TEXT_SECONDARY },
-    confidencePill: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        gap: 4,
         backgroundColor: ACCENT_DIM,
+        paddingHorizontal: 7,
+        paddingVertical: 3,
         borderRadius: 999,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
     },
-    confidenceText: { fontSize: 11, fontWeight: '700', color: ACCENT },
+    confText: { fontSize: 11, fontWeight: '700', color: ACCENT },
 })

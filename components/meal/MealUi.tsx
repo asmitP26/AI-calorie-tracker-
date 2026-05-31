@@ -99,7 +99,7 @@ const ui = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
     borderStyle: 'dashed',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: '#FFFFFF',
   },
   emptyIcon: {
     width: 56,

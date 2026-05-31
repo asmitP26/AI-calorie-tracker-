@@ -2,12 +2,10 @@ import { useState } from 'react'
 import { View, ScrollView, StyleSheet, Pressable, Image, ActivityIndicator } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import {
   Camera,
   ChevronLeft,
   ImagePlus,
-  ScanLine,
   Sparkles,
 } from 'lucide-react-native'
 import * as ImagePicker from 'expo-image-picker'
@@ -18,7 +16,6 @@ import { EstimateDisclaimer } from '@/components/meal/MealUi'
 import {
   ACCENT,
   ACCENT_DIM,
-  ACCENT_BORDER,
   BG,
   BORDER,
   SURFACE,
@@ -28,12 +25,6 @@ import {
 } from '@/lib/theme'
 import { analyzeMealImage } from '@/lib/aiNutrition'
 import { saveMeal } from '@/lib/mealStorage'
-
-const STEPS = [
-  { n: '1', label: 'Add photo' },
-  { n: '2', label: 'AI scan' },
-  { n: '3', label: 'See macros' },
-]
 
 export default function AnalyzeScreen() {
   const insets = useSafeAreaInsets()
@@ -92,21 +83,14 @@ export default function AnalyzeScreen() {
     }
   }
 
-  const activeStep = analyzing ? 2 : imageUri ? 2 : 1
-
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
+      {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={s.backBtn}>
-          <ChevronLeft size={22} color={TEXT_SECONDARY} />
+          <ChevronLeft size={22} color={TEXT_PRIMARY} />
         </Pressable>
-        <View style={s.headerCenter}>
-          <Text style={s.headerTitle}>Analyze Meal</Text>
-          <View style={s.aiBadge}>
-            <Sparkles size={11} color={ACCENT} strokeWidth={2.5} />
-            <Text style={s.aiBadgeText}>AI Vision</Text>
-          </View>
-        </View>
+        <Text style={s.headerTitle}>Analyze Meal</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -114,103 +98,69 @@ export default function AnalyzeScreen() {
         contentContainerStyle={[s.body, { paddingBottom: insets.bottom + 28 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={s.instruction}>
-          Snap or upload your meal. Cal AI estimates calories and macros from your photo in seconds.
+        {/* Title */}
+        <Text style={s.title}>Just snap a pic</Text>
+        <Text style={s.subtitle}>
+          Take or upload a photo of your meal and AI will estimate calories and macros in seconds.
         </Text>
 
-        <View style={s.stepsRow}>
-          {STEPS.map((step, i) => {
-            const done = analyzing ? i < 1 : i + 1 < activeStep
-            const active = i + 1 === activeStep
-            return (
-              <View key={step.n} style={s.stepItem}>
-                <View style={[s.stepDot, done && s.stepDotDone, active && s.stepDotActive]}>
-                  <Text style={[s.stepNum, done && s.stepNumDone, active && !done && s.stepNumActive]}>
-                    {step.n}
-                  </Text>
-                </View>
-                <Text style={[s.stepLabel, active && s.stepLabelActive]}>{step.label}</Text>
-              </View>
-            )
-          })}
-        </View>
-
+        {/* Image Area */}
         {imageUri ? (
           <Card style={s.previewCard}>
-            <View style={s.previewHeader}>
-              <ScanLine size={16} color={ACCENT} strokeWidth={2} />
-              <Text style={s.previewLabel}>Meal preview</Text>
-            </View>
-            <View style={s.previewImageWrap}>
-              <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
-              {analyzing ? (
-                <View style={s.previewOverlay}>
-                  <Sparkles size={28} color={ACCENT} strokeWidth={2} />
-                  <ActivityIndicator color={ACCENT} style={{ marginTop: 12 }} />
-                  <Text style={s.overlayTitle}>Analyzing meal with AI vision...</Text>
-                  <Text style={s.overlaySub}>Estimating calories, macros, and ingredients</Text>
-                </View>
-              ) : null}
-            </View>
-            {!analyzing ? (
-              <Pressable onPress={() => setImageUri(null)} style={s.changePhoto}>
-                <Text style={s.changePhotoText}>Change photo</Text>
+            <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
+            {analyzing && (
+              <View style={s.previewOverlay}>
+                <Sparkles size={32} color={ACCENT} strokeWidth={2} />
+                <ActivityIndicator color={ACCENT} style={{ marginTop: 12 }} />
+                <Text style={s.overlayText}>Analyzing with AI...</Text>
+              </View>
+            )}
+            {!analyzing && (
+              <Pressable onPress={() => setImageUri(null)} style={s.changeBtn}>
+                <Text style={s.changeBtnText}>Change photo</Text>
               </Pressable>
-            ) : null}
+            )}
           </Card>
         ) : (
           <Pressable
             onPress={() => pickImage('gallery')}
-            disabled={analyzing}
-            style={({ pressed }) => [pressed && { opacity: 0.92 }]}
+            style={({ pressed }) => [s.uploadArea, pressed && { opacity: 0.9 }]}
           >
-            <LinearGradient
-              colors={['rgba(34,197,94,0.12)', 'rgba(255,255,255,0.03)']}
-              style={s.placeholderCard}
-            >
-              <View style={s.placeholderIcon}>
-                <ImagePlus size={34} color={ACCENT} strokeWidth={1.8} />
-              </View>
-              <Text style={s.placeholderTitle}>Tap to add a meal photo</Text>
-              <Text style={s.placeholderSub}>
-                Well-lit, top-down shots work best for accurate portion estimates.
-              </Text>
-              <View style={s.uploadHint}>
-                <Camera size={14} color={ACCENT} strokeWidth={2.2} />
-                <Text style={s.uploadHintText}>Choose from gallery</Text>
-              </View>
-            </LinearGradient>
+            <View style={s.uploadIconWrap}>
+              <ImagePlus size={40} color={ACCENT} strokeWidth={1.6} />
+            </View>
+            <Text style={s.uploadTitle}>Tap to add meal photo</Text>
+            <Text style={s.uploadHint}>Well-lit, top-down shots work best</Text>
           </Pressable>
         )}
 
-        <Card style={s.pickerCard}>
-          <Text style={s.pickerTitle}>Upload options</Text>
-          <View style={s.pickerActions}>
-            <Button
-              label="Choose Meal Photo"
-              variant="primary"
-              fullWidth
-              onPress={() => pickImage('gallery')}
-              disabled={analyzing}
-            />
-            <Button
-              label="Take Photo"
-              variant="secondary"
-              fullWidth
-              onPress={() => pickImage('camera')}
-              disabled={analyzing}
-            />
-          </View>
-        </Card>
+        {/* Action Buttons */}
+        <View style={s.actions}>
+          <Button
+            label="Choose from Gallery"
+            variant="secondary"
+            fullWidth
+            onPress={() => pickImage('gallery')}
+            disabled={analyzing}
+          />
+          <Button
+            label="Take Photo"
+            variant="outline"
+            fullWidth
+            onPress={() => pickImage('camera')}
+            disabled={analyzing}
+          />
+        </View>
 
-        {error ? (
-          <Card compact style={s.errorCard}>
+        {error && (
+          <View style={s.errorCard}>
             <Text style={s.errorText}>{error}</Text>
-          </Card>
-        ) : null}
+          </View>
+        )}
 
+        {/* Scan Button */}
         <Button
-          label="Analyze Meal"
+          label="Scan Food"
           variant="primary"
           size="lg"
           fullWidth
@@ -230,9 +180,10 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: SURFACE,
+    borderBottomWidth: 1,
     borderBottomColor: BORDER,
   },
   backBtn: {
@@ -241,146 +192,56 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
   },
-  headerCenter: { alignItems: 'center', gap: 4 },
   headerTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
-  aiBadge: {
-    flexDirection: 'row',
+  body: { paddingHorizontal: 20, paddingTop: 24, gap: 18 },
+  title: { fontSize: 28, fontWeight: '800', color: TEXT_PRIMARY, letterSpacing: -0.8 },
+  subtitle: { fontSize: 15, lineHeight: 22, color: TEXT_SECONDARY, marginTop: -8 },
+  uploadArea: {
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: ACCENT_DIM,
-    borderWidth: 1,
-    borderColor: ACCENT_BORDER,
-  },
-  aiBadgeText: { fontSize: 11, fontWeight: '700', color: ACCENT },
-  body: { paddingHorizontal: 20, paddingTop: 18, gap: 16 },
-  instruction: { fontSize: 15, lineHeight: 22, color: TEXT_SECONDARY },
-  stepsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-  },
-  stepItem: { alignItems: 'center', gap: 6, flex: 1 },
-  stepDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepDotActive: {
-    borderColor: ACCENT,
-    backgroundColor: ACCENT_DIM,
-  },
-  stepDotDone: {
-    borderColor: ACCENT,
-    backgroundColor: ACCENT,
-  },
-  stepNum: { fontSize: 12, fontWeight: '700', color: TEXT_TERTIARY },
-  stepNumActive: { color: ACCENT },
-  stepNumDone: { color: '#0d0d0d' },
-  stepLabel: { fontSize: 11, color: TEXT_TERTIARY, fontWeight: '600' },
-  stepLabelActive: { color: TEXT_PRIMARY },
-  pickerCard: { paddingVertical: 14, gap: 10 },
-  pickerTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: TEXT_TERTIARY,
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-  },
-  pickerActions: { gap: 10 },
-  previewCard: { gap: 10, padding: 14, overflow: 'hidden' },
-  previewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  previewLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: TEXT_TERTIARY,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-  previewImageWrap: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: ACCENT_BORDER,
-  },
-  previewImage: {
-    width: '100%',
-    height: 260,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  previewOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13,13,13,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    gap: 4,
-  },
-  overlayTitle: {
-    marginTop: 8,
-    fontSize: 15,
-    fontWeight: '700',
-    color: TEXT_PRIMARY,
-    textAlign: 'center',
-  },
-  overlaySub: {
-    fontSize: 12,
-    color: TEXT_SECONDARY,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  changePhoto: { alignSelf: 'center', paddingVertical: 6 },
-  changePhotoText: { fontSize: 13, fontWeight: '600', color: ACCENT },
-  placeholderCard: {
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 40,
+    gap: 12,
+    paddingVertical: 48,
     paddingHorizontal: 24,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: ACCENT_BORDER,
+    borderColor: BORDER,
     borderStyle: 'dashed',
+    backgroundColor: SURFACE,
   },
-  placeholderIcon: {
-    width: 76,
-    height: 76,
+  uploadIconWrap: {
+    width: 80,
+    height: 80,
     borderRadius: 24,
     backgroundColor: ACCENT_DIM,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
   },
-  placeholderTitle: { fontSize: 18, fontWeight: '700', color: TEXT_PRIMARY },
-  placeholderSub: {
-    fontSize: 13,
-    color: TEXT_SECONDARY,
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 8,
+  uploadTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
+  uploadHint: { fontSize: 13, color: TEXT_SECONDARY },
+  previewCard: { padding: 0, overflow: 'hidden', borderRadius: 20 },
+  previewImage: {
+    width: '100%',
+    height: 280,
+    borderRadius: 20,
   },
-  uploadHint: {
-    flexDirection: 'row',
+  previewOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.85)',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(34,197,94,0.15)',
+    justifyContent: 'center',
+    gap: 4,
+    borderRadius: 20,
   },
-  uploadHintText: { fontSize: 12, fontWeight: '700', color: ACCENT },
+  overlayText: { fontSize: 15, fontWeight: '700', color: TEXT_PRIMARY, marginTop: 8 },
+  changeBtn: { alignSelf: 'center', paddingVertical: 10 },
+  changeBtnText: { fontSize: 14, fontWeight: '600', color: ACCENT },
+  actions: { gap: 10 },
   errorCard: {
-    borderColor: 'rgba(248,113,113,0.35)',
-    backgroundColor: 'rgba(248,113,113,0.08)',
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(239,68,68,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.2)',
   },
-  errorText: { fontSize: 13, color: '#f87171', lineHeight: 18 },
+  errorText: { fontSize: 13, color: '#EF4444', lineHeight: 18 },
 })

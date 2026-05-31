@@ -117,7 +117,7 @@ export default function TabBar({ state, navigation, descriptors }: BottomTabBarP
   if (Platform.OS === 'ios') {
     return (
       <View style={s.wrapper}>
-        <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
+        <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
         <View style={s.overlay} />
         {tabs}
         {insets.bottom > 0 && (
@@ -146,15 +146,15 @@ const s = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3, shadowRadius: 12,
-    elevation: 20,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    shadowOpacity: 0.08, shadowRadius: 12,
+    elevation: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
-  wrapperAndroid: { backgroundColor: BG },
+  wrapperAndroid: { backgroundColor: '#FFFFFF' },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: `${BG}B8`, // BG at ~72% opacity
+    backgroundColor: 'rgba(255,255,255,0.92)',
   },
   bar: {
     flexDirection: 'row', height: TAB_HEIGHT, alignItems: 'stretch',

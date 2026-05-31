@@ -29,13 +29,13 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor:  SURFACE,
     borderRadius:     16,
-    borderWidth:      StyleSheet.hairlineWidth,
+    borderWidth:      1,
     borderColor:      BORDER,
-    // Subtle elevation
+    // Soft elevation for light theme
     shadowColor:      '#000',
-    shadowOffset:     { width: 0, height: 2 },
-    shadowOpacity:    0.25,
-    shadowRadius:     6,
+    shadowOffset:     { width: 0, height: 4 },
+    shadowOpacity:    0.06,
+    shadowRadius:     12,
     elevation:        3,
   },
   normal:  { padding: 16 },

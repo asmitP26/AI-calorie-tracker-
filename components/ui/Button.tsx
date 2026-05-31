@@ -65,11 +65,11 @@ export function Button({
   }
 
   const textColor =
-    variant === 'primary'     ? BG :
+    variant === 'primary'     ? '#FFFFFF' :
     variant === 'secondary'   ? ACCENT :
     variant === 'outline'     ? TEXT_PRIMARY :
     variant === 'ghost'       ? TEXT_SECONDARY :
-    variant === 'destructive' ? '#f87171' :
+    variant === 'destructive' ? '#EF4444' :
     TEXT_PRIMARY
 
   return (
@@ -93,7 +93,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? BG : ACCENT}
+          color={variant === 'primary' ? '#FFFFFF' : ACCENT}
         />
       ) : (
         <Text style={{ color: textColor, fontSize: sz.fontSize, fontWeight: '700' }}>

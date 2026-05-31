@@ -16,35 +16,35 @@
 export const ACCENT = '#22C55E'           // green — Cal AI brand color
 
 // Derived from ACCENT — adjust opacity as needed
-export const ACCENT_DIM = 'rgba(34,197,94,0.12)'
-export const ACCENT_BORDER = 'rgba(34,197,94,0.30)'
-export const ACCENT_GLOW = 'rgba(34,197,94,0.20)'
+export const ACCENT_DIM = 'rgba(34,197,94,0.08)'
+export const ACCENT_BORDER = 'rgba(34,197,94,0.25)'
+export const ACCENT_GLOW = 'rgba(34,197,94,0.15)'
 // Text color on dark background using accent tone
-export const ACCENT_LIGHT = '#4ade80'
+export const ACCENT_LIGHT = '#16a34a'
 
 // ── Backgrounds ───────────────────────────────────────────────────────────────
-export const BG = '#0d0d0d'        // main app background
-export const SURFACE = '#1a1a1a'        // cards, inputs
-export const SURFACE2 = '#242424'        // elevated surface (sheet panels, etc.)
-export const SURFACE3 = '#2e2e2e'        // even more elevated
+export const BG = '#F8F9FA'        // main app background (light)
+export const SURFACE = '#FFFFFF'        // cards, inputs (white)
+export const SURFACE2 = '#F1F3F5'        // elevated surface (sheet panels, etc.)
+export const SURFACE3 = '#E9ECEF'        // even more elevated
 
 // ── Text ──────────────────────────────────────────────────────────────────────
-export const TEXT_PRIMARY = '#ffffff'
-export const TEXT_SECONDARY = 'rgba(255,255,255,0.55)'
-export const TEXT_TERTIARY = 'rgba(255,255,255,0.28)'
-export const TEXT_DISABLED = 'rgba(255,255,255,0.18)'
+export const TEXT_PRIMARY = '#1A1A2E'
+export const TEXT_SECONDARY = '#6B7280'
+export const TEXT_TERTIARY = '#9CA3AF'
+export const TEXT_DISABLED = '#D1D5DB'
 
 // ── Borders ───────────────────────────────────────────────────────────────────
-export const BORDER = 'rgba(255,255,255,0.09)'
-export const BORDER_ACTIVE = 'rgba(255,255,255,0.18)'
+export const BORDER = '#E5E7EB'
+export const BORDER_ACTIVE = '#D1D5DB'
 
 // ── Semantic ──────────────────────────────────────────────────────────────────
-export const ERROR = '#f87171'
-export const ERROR_DIM = 'rgba(248,113,113,0.10)'
-export const WARNING = '#fbbf24'
-export const SUCCESS = '#4ade80'
+export const ERROR = '#EF4444'
+export const ERROR_DIM = 'rgba(239,68,68,0.08)'
+export const WARNING = '#F59E0B'
+export const SUCCESS = '#22C55E'
 
 // ── Tab bar ───────────────────────────────────────────────────────────────────
 export const TAB_ACTIVE = ACCENT
-export const TAB_INACTIVE = 'rgba(255,255,255,0.40)'
+export const TAB_INACTIVE = '#9CA3AF'
 export const TAB_HEIGHT = 68
