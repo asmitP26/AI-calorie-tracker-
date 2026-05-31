@@ -18,6 +18,9 @@ export interface FoodItem {
   fat: number
 }
 
+/** How the meal analysis was produced (optional for older saved meals). */
+export type AnalysisSource = 'gemini' | 'mock'
+
 /** AI nutrition analysis result for one meal photo. */
 export interface MealAnalysis {
   id: string
@@ -30,6 +33,8 @@ export interface MealAnalysis {
   items: FoodItem[]
   assumptions: string[]
   healthNotes: string[]
+  /** Present when saved after AI integration; used for demo disclaimers. */
+  analysisSource?: AnalysisSource
 }
 
 /** Persisted meal record (same shape as analysis). */

@@ -118,6 +118,14 @@ export default function ResultScreen() {
           <Text style={s.calorieUnit}>kilocalories</Text>
         </Card>
 
+        {meal.analysisSource === 'mock' ? (
+          <View style={s.fallbackBanner}>
+            <Text style={s.fallbackBannerText}>
+              Demo estimate — AI vision was unavailable. Values are illustrative, not from a live scan.
+            </Text>
+          </View>
+        ) : null}
+
         <SectionLabel title="Macronutrients" subtitle="Per-meal estimated breakdown" />
         <View style={s.macroGrid}>
           {MACRO_CONFIG.map((macro) => {
@@ -278,6 +286,19 @@ const s = StyleSheet.create({
   },
   calorieValue: { fontSize: 52, fontWeight: '800', color: ACCENT, letterSpacing: -2, lineHeight: 56 },
   calorieUnit: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '600' },
+  fallbackBanner: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(251,191,36,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(251,191,36,0.28)',
+  },
+  fallbackBannerText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+  },
   macroGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   macroCard: {
     width: '31%',

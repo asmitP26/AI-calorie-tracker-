@@ -79,5 +79,6 @@ export function createMockMealAnalysis(imageUri: string): MealAnalysis {
       'Fiber from broccoli helps balance blood sugar response.',
       'Sodium may be elevated from teriyaki glaze; pair with water-rich sides.',
     ],
+    analysisSource: 'mock',
   }
 }

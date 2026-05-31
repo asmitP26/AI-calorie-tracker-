@@ -25,9 +25,8 @@ import {
   TEXT_SECONDARY,
   TEXT_TERTIARY,
 } from '@/lib/theme'
-import { createMockMealAnalysis } from '@/lib/mockNutrition'
+import { analyzeMealImage } from '@/lib/aiNutrition'
 import { saveMeal } from '@/lib/mealStorage'
-import { sleep } from '@/lib/utils'
 
 const STEPS = [
   { n: '1', label: 'Add photo' },
@@ -82,8 +81,7 @@ export default function AnalyzeScreen() {
     setError(null)
     setAnalyzing(true)
     try {
-      await sleep(1800)
-      const analysis = createMockMealAnalysis(imageUri)
+      const analysis = await analyzeMealImage(imageUri)
       await saveMeal(analysis)
       router.push(`/result/${analysis.id}`)
     } catch {
