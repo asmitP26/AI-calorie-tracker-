@@ -93,11 +93,12 @@ const ui = StyleSheet.create({
   emptyCard: {
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 32,
+    paddingHorizontal: 22,
+    borderRadius: 18,
+    borderWidth: 1,
     borderColor: BORDER,
+    borderStyle: 'dashed',
     backgroundColor: 'rgba(255,255,255,0.03)',
   },
   emptyIcon: {

@@ -29,13 +29,16 @@ import {
 import { getMealById } from '@/lib/mealStorage'
 import type { SavedMeal } from '@/lib/mealTypes'
 
-const MACRO_CONFIG = [
+const PRIMARY_MACROS = [
   { key: 'protein' as const, label: 'Protein', unit: 'g', icon: Beef },
   { key: 'carbs' as const, label: 'Carbs', unit: 'g', icon: Wheat },
   { key: 'fat' as const, label: 'Fat', unit: 'g', icon: Droplets },
+] as const
+
+const SECONDARY_MACROS = [
   { key: 'fiber' as const, label: 'Fiber', unit: 'g', icon: Leaf },
   { key: 'sugar' as const, label: 'Sugar', unit: 'g', icon: Candy },
-]
+] as const
 
 export default function ResultScreen() {
   const insets = useSafeAreaInsets()
@@ -102,20 +105,27 @@ export default function ResultScreen() {
           />
           <View style={s.heroContent}>
             <Text style={s.mealName} numberOfLines={2}>{meal.mealName}</Text>
-            <View style={s.confidencePill}>
-              <Sparkles size={12} color={ACCENT} strokeWidth={2.5} />
-              <Text style={s.confidenceText}>{meal.confidence}% AI confidence</Text>
+            <View style={s.heroBadges}>
+              <View style={s.confidencePill}>
+                <Sparkles size={12} color={ACCENT} strokeWidth={2.5} />
+                <Text style={s.confidenceText}>{meal.confidence}% confidence</Text>
+              </View>
+              {meal.analysisSource === 'gemini' ? (
+                <View style={s.sourcePill}>
+                  <Text style={s.sourcePillText}>AI analyzed</Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
 
         <Card style={s.calorieCard}>
           <View style={s.calorieIcon}>
-            <Flame size={28} color={ACCENT} strokeWidth={2} />
+            <Flame size={32} color={ACCENT} strokeWidth={2} />
           </View>
-          <Text style={s.calorieLabel}>Total calories (estimate)</Text>
+          <Text style={s.calorieLabel}>Total calories</Text>
           <Text style={s.calorieValue}>{meal.totalCalories}</Text>
-          <Text style={s.calorieUnit}>kilocalories</Text>
+          <Text style={s.calorieUnit}>kilocalories · estimate</Text>
         </Card>
 
         {meal.analysisSource === 'mock' ? (
@@ -127,13 +137,30 @@ export default function ResultScreen() {
         ) : null}
 
         <SectionLabel title="Macronutrients" subtitle="Per-meal estimated breakdown" />
-        <View style={s.macroGrid}>
-          {MACRO_CONFIG.map((macro) => {
+        <View style={s.macroRowPrimary}>
+          {PRIMARY_MACROS.map((macro) => {
             const Icon = macro.icon
             return (
-              <Card key={macro.key} compact style={s.macroCard}>
+              <Card key={macro.key} compact style={s.macroCardPrimary}>
                 <View style={s.macroIconWrap}>
-                  <Icon size={15} color={ACCENT} strokeWidth={2.2} />
+                  <Icon size={16} color={ACCENT} strokeWidth={2.2} />
+                </View>
+                <Text style={s.macroLabel}>{macro.label}</Text>
+                <Text style={s.macroValuePrimary}>
+                  {meal.macros[macro.key]}
+                  <Text style={s.macroUnit}>{macro.unit}</Text>
+                </Text>
+              </Card>
+            )
+          })}
+        </View>
+        <View style={s.macroRowSecondary}>
+          {SECONDARY_MACROS.map((macro) => {
+            const Icon = macro.icon
+            return (
+              <Card key={macro.key} compact style={s.macroCardSecondary}>
+                <View style={s.macroIconWrapSmall}>
+                  <Icon size={14} color={ACCENT} strokeWidth={2.2} />
                 </View>
                 <Text style={s.macroLabel}>{macro.label}</Text>
                 <Text style={s.macroValue}>
@@ -246,10 +273,10 @@ const s = StyleSheet.create({
     gap: 8,
   },
   mealName: { fontSize: 22, fontWeight: '800', color: TEXT_PRIMARY, letterSpacing: -0.4 },
+  heroBadges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   confidencePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
     gap: 6,
     backgroundColor: ACCENT_DIM,
     borderRadius: 999,
@@ -259,14 +286,28 @@ const s = StyleSheet.create({
     borderColor: 'rgba(34,197,94,0.25)',
   },
   confidenceText: { fontSize: 12, fontWeight: '700', color: ACCENT },
+  sourcePill: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+  sourcePillText: { fontSize: 11, fontWeight: '600', color: TEXT_SECONDARY },
   calorieCard: {
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 22,
-    marginTop: -8,
-    borderWidth: 1,
-    borderColor: 'rgba(34,197,94,0.2)',
-    backgroundColor: 'rgba(34,197,94,0.06)',
+    gap: 6,
+    paddingVertical: 26,
+    marginTop: -12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(34,197,94,0.35)',
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    shadowColor: ACCENT,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   calorieIcon: {
     width: 52,
@@ -284,7 +325,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: 'uppercase',
   },
-  calorieValue: { fontSize: 52, fontWeight: '800', color: ACCENT, letterSpacing: -2, lineHeight: 56 },
+  calorieValue: { fontSize: 60, fontWeight: '800', color: ACCENT, letterSpacing: -2.5, lineHeight: 64 },
   calorieUnit: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '600' },
   fallbackBanner: {
     padding: 12,
@@ -299,13 +340,18 @@ const s = StyleSheet.create({
     color: TEXT_SECONDARY,
     textAlign: 'center',
   },
-  macroGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  macroCard: {
-    width: '31%',
-    minWidth: 100,
-    flexGrow: 1,
-    gap: 6,
-    paddingVertical: 12,
+  macroRowPrimary: { flexDirection: 'row', gap: 8 },
+  macroRowSecondary: { flexDirection: 'row', gap: 8 },
+  macroCardPrimary: { flex: 1, gap: 6, paddingVertical: 14 },
+  macroCardSecondary: { flex: 1, gap: 5, paddingVertical: 12 },
+  macroValuePrimary: { fontSize: 22, fontWeight: '800', color: TEXT_PRIMARY },
+  macroIconWrapSmall: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: ACCENT_DIM,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   macroIconWrap: {
     width: 30,

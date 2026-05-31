@@ -4,6 +4,7 @@ import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
+  Camera,
   ChevronLeft,
   ImagePlus,
   ScanLine,
@@ -91,7 +92,7 @@ export default function AnalyzeScreen() {
     }
   }
 
-  const activeStep = imageUri ? 2 : 1
+  const activeStep = analyzing ? 2 : imageUri ? 2 : 1
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -114,17 +115,19 @@ export default function AnalyzeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={s.instruction}>
-          Snap or upload your meal. Cal AI estimates calories and macros from your photo — demo uses mock analysis.
+          Snap or upload your meal. Cal AI estimates calories and macros from your photo in seconds.
         </Text>
 
         <View style={s.stepsRow}>
           {STEPS.map((step, i) => {
-            const done = i + 1 < activeStep
+            const done = analyzing ? i < 1 : i + 1 < activeStep
             const active = i + 1 === activeStep
             return (
               <View key={step.n} style={s.stepItem}>
                 <View style={[s.stepDot, done && s.stepDotDone, active && s.stepDotActive]}>
-                  <Text style={[s.stepNum, (done || active) && s.stepNumActive]}>{step.n}</Text>
+                  <Text style={[s.stepNum, done && s.stepNumDone, active && !done && s.stepNumActive]}>
+                    {step.n}
+                  </Text>
                 </View>
                 <Text style={[s.stepLabel, active && s.stepLabelActive]}>{step.label}</Text>
               </View>
@@ -138,27 +141,50 @@ export default function AnalyzeScreen() {
               <ScanLine size={16} color={ACCENT} strokeWidth={2} />
               <Text style={s.previewLabel}>Meal preview</Text>
             </View>
-            <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
-            <Pressable onPress={() => setImageUri(null)} style={s.changePhoto}>
-              <Text style={s.changePhotoText}>Change photo</Text>
-            </Pressable>
+            <View style={s.previewImageWrap}>
+              <Image source={{ uri: imageUri }} style={s.previewImage} resizeMode="cover" />
+              {analyzing ? (
+                <View style={s.previewOverlay}>
+                  <Sparkles size={28} color={ACCENT} strokeWidth={2} />
+                  <ActivityIndicator color={ACCENT} style={{ marginTop: 12 }} />
+                  <Text style={s.overlayTitle}>Analyzing meal with AI vision...</Text>
+                  <Text style={s.overlaySub}>Estimating calories, macros, and ingredients</Text>
+                </View>
+              ) : null}
+            </View>
+            {!analyzing ? (
+              <Pressable onPress={() => setImageUri(null)} style={s.changePhoto}>
+                <Text style={s.changePhotoText}>Change photo</Text>
+              </Pressable>
+            ) : null}
           </Card>
         ) : (
-          <LinearGradient
-            colors={['rgba(34,197,94,0.08)', 'rgba(255,255,255,0.03)']}
-            style={s.placeholderCard}
+          <Pressable
+            onPress={() => pickImage('gallery')}
+            disabled={analyzing}
+            style={({ pressed }) => [pressed && { opacity: 0.92 }]}
           >
-            <View style={s.placeholderIcon}>
-              <ImagePlus size={32} color={ACCENT} strokeWidth={1.8} />
-            </View>
-            <Text style={s.placeholderTitle}>Add a meal photo</Text>
-            <Text style={s.placeholderSub}>
-              Clear, well-lit photos help Cal AI estimate portions more accurately.
-            </Text>
-          </LinearGradient>
+            <LinearGradient
+              colors={['rgba(34,197,94,0.12)', 'rgba(255,255,255,0.03)']}
+              style={s.placeholderCard}
+            >
+              <View style={s.placeholderIcon}>
+                <ImagePlus size={34} color={ACCENT} strokeWidth={1.8} />
+              </View>
+              <Text style={s.placeholderTitle}>Tap to add a meal photo</Text>
+              <Text style={s.placeholderSub}>
+                Well-lit, top-down shots work best for accurate portion estimates.
+              </Text>
+              <View style={s.uploadHint}>
+                <Camera size={14} color={ACCENT} strokeWidth={2.2} />
+                <Text style={s.uploadHintText}>Choose from gallery</Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
         )}
 
         <Card style={s.pickerCard}>
+          <Text style={s.pickerTitle}>Upload options</Text>
           <View style={s.pickerActions}>
             <Button
               label="Choose Meal Photo"
@@ -176,16 +202,6 @@ export default function AnalyzeScreen() {
             />
           </View>
         </Card>
-
-        {analyzing ? (
-          <Card style={s.loadingCard}>
-            <ActivityIndicator color={ACCENT} size="small" />
-            <View style={s.loadingTextWrap}>
-              <Text style={s.loadingTitle}>Analyzing meal with AI vision...</Text>
-              <Text style={s.loadingSub}>Estimating calories, macros, and ingredients</Text>
-            </View>
-          </Card>
-        ) : null}
 
         {error ? (
           <Card compact style={s.errorCard}>
@@ -269,9 +285,17 @@ const s = StyleSheet.create({
   },
   stepNum: { fontSize: 12, fontWeight: '700', color: TEXT_TERTIARY },
   stepNumActive: { color: ACCENT },
+  stepNumDone: { color: '#0d0d0d' },
   stepLabel: { fontSize: 11, color: TEXT_TERTIARY, fontWeight: '600' },
   stepLabelActive: { color: TEXT_PRIMARY },
-  pickerCard: { paddingVertical: 14 },
+  pickerCard: { paddingVertical: 14, gap: 10 },
+  pickerTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: TEXT_TERTIARY,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+  },
   pickerActions: { gap: 10 },
   previewCard: { gap: 10, padding: 14, overflow: 'hidden' },
   previewHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -282,51 +306,78 @@ const s = StyleSheet.create({
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
+  previewImageWrap: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: ACCENT_BORDER,
+  },
   previewImage: {
     width: '100%',
-    height: 240,
-    borderRadius: 14,
+    height: 260,
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
-  changePhoto: { alignSelf: 'center', paddingVertical: 4 },
+  previewOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(13,13,13,0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 4,
+  },
+  overlayTitle: {
+    marginTop: 8,
+    fontSize: 15,
+    fontWeight: '700',
+    color: TEXT_PRIMARY,
+    textAlign: 'center',
+  },
+  overlaySub: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  changePhoto: { alignSelf: 'center', paddingVertical: 6 },
   changePhotoText: { fontSize: 13, fontWeight: '600', color: ACCENT },
   placeholderCard: {
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 36,
+    paddingVertical: 40,
     paddingHorizontal: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: ACCENT_BORDER,
     borderStyle: 'dashed',
   },
   placeholderIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
+    width: 76,
+    height: 76,
+    borderRadius: 24,
     backgroundColor: ACCENT_DIM,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
-  placeholderTitle: { fontSize: 17, fontWeight: '700', color: TEXT_PRIMARY },
+  placeholderTitle: { fontSize: 18, fontWeight: '700', color: TEXT_PRIMARY },
   placeholderSub: {
     fontSize: 13,
     color: TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 20,
+    paddingHorizontal: 8,
   },
-  loadingCard: {
+  uploadHint: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    paddingVertical: 16,
-    borderColor: ACCENT_BORDER,
-    backgroundColor: ACCENT_DIM,
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34,197,94,0.15)',
   },
-  loadingTextWrap: { flex: 1, gap: 3 },
-  loadingTitle: { fontSize: 14, fontWeight: '700', color: TEXT_PRIMARY },
-  loadingSub: { fontSize: 12, color: TEXT_SECONDARY },
+  uploadHintText: { fontSize: 12, fontWeight: '700', color: ACCENT },
   errorCard: {
     borderColor: 'rgba(248,113,113,0.35)',
     backgroundColor: 'rgba(248,113,113,0.08)',

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react-native'
 import { Text } from '@/components/ui/Text'
 import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
 import { EstimateDisclaimer, EmptyMealsState, SectionLabel } from '@/components/meal/MealUi'
 import {
     ACCENT,
@@ -126,19 +127,14 @@ export default function HomeScreen() {
                 <MacroChip icon={Droplets} label="Fat" value={summary.macros.fat} />
             </View>
 
-            <Pressable
+            <Button
+                label="Analyze Meal"
+                variant="primary"
+                size="lg"
+                fullWidth
                 onPress={() => router.push('/analyze')}
-                style={({ pressed }) => [s.ctaCard, pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] }]}
-            >
-                <View style={s.ctaIcon}>
-                    <Camera size={22} color={ACCENT} strokeWidth={2} />
-                </View>
-                <View style={s.ctaText}>
-                    <Text style={s.ctaTitle}>Analyze Meal</Text>
-                    <Text style={s.ctaSub}>Snap a photo · get instant macro estimates</Text>
-                </View>
-                <ChevronRight size={20} color={TEXT_TERTIARY} />
-            </Pressable>
+            />
+            <Text style={s.ctaHint}>Snap a photo · AI estimates calories and macros</Text>
 
             <SectionLabel title="Recent meals" />
             {recentMeals.length === 0 ? (
@@ -250,7 +246,7 @@ const s = StyleSheet.create({
         letterSpacing: 0.5,
         textTransform: 'uppercase',
     },
-    heroValue: { fontSize: 48, fontWeight: '800', color: '#fff', letterSpacing: -2 },
+    heroValue: { fontSize: 56, fontWeight: '800', color: '#fff', letterSpacing: -2.5, lineHeight: 58 },
     heroUnit: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 10 },
     progressTrack: {
         height: 6,
@@ -278,27 +274,12 @@ const s = StyleSheet.create({
     macroLabel: { fontSize: 11, color: TEXT_TERTIARY, fontWeight: '600' },
     macroValue: { fontSize: 18, fontWeight: '800', color: TEXT_PRIMARY },
     macroUnit: { fontSize: 12, fontWeight: '600', color: TEXT_SECONDARY },
-    ctaCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        padding: 16,
-        borderRadius: 16,
-        backgroundColor: SURFACE,
-        borderWidth: 1,
-        borderColor: BORDER,
+    ctaHint: {
+        fontSize: 12,
+        color: TEXT_TERTIARY,
+        textAlign: 'center',
+        marginTop: -8,
     },
-    ctaIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
-        backgroundColor: ACCENT_DIM,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    ctaText: { flex: 1, gap: 3 },
-    ctaTitle: { fontSize: 16, fontWeight: '700', color: TEXT_PRIMARY },
-    ctaSub: { fontSize: 12, color: TEXT_SECONDARY, lineHeight: 17 },
     mealCard: {
         flexDirection: 'row',
         alignItems: 'center',

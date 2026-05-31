@@ -131,10 +131,14 @@ export default function ExploreScreen() {
                                 </View>
                                 <View style={s.itemBody}>
                                     <Text style={s.itemName} numberOfLines={1}>{meal.mealName}</Text>
-                                    <Text style={s.itemMeta}>{formatRelativeDate(meal.createdAt)}</Text>
+                                    <View style={s.metaRow}>
+                                        <Text style={s.itemMeta}>{formatRelativeDate(meal.createdAt)}</Text>
+                                        <Text style={s.itemDot}>·</Text>
+                                        <Text style={s.itemKcal}>{meal.totalCalories} kcal</Text>
+                                    </View>
                                     <View style={s.confidencePill}>
                                         <Sparkles size={10} color={ACCENT} strokeWidth={2.5} />
-                                        <Text style={s.confidenceText}>{meal.confidence}% estimate</Text>
+                                        <Text style={s.confidenceText}>{meal.confidence}% confidence</Text>
                                     </View>
                                 </View>
                                 <ChevronRight size={20} color={TEXT_TERTIARY} />
@@ -175,7 +179,12 @@ const s = StyleSheet.create({
         alignItems: 'center',
         gap: 14,
         padding: 14,
+        borderWidth: 1,
+        borderColor: BORDER,
     },
+    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+    itemDot: { fontSize: 12, color: TEXT_TERTIARY },
+    itemKcal: { fontSize: 12, fontWeight: '700', color: ACCENT },
     thumbWrap: { position: 'relative' },
     thumb: {
         width: 72,

@@ -13,8 +13,7 @@ import Animated, {
     Easing,
 } from 'react-native-reanimated'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Ionicons } from '@expo/vector-icons'
-import { ChevronRight } from 'lucide-react-native'
+import { Camera, ChevronRight, Sparkles, TrendingUp } from 'lucide-react-native'
 import { Text } from '@/components/ui/Text'
 import { AlertModal } from '@/components/ui/AppModal'
 import { useToast } from '@/contexts/ToastContext'
@@ -27,28 +26,28 @@ const { width: SW, height: SH } = Dimensions.get('window')
 type FeatureAction = 'analyze' | 'ai-info' | 'dashboard'
 
 const FEATURES: Array<{
-    icon: 'camera-outline' | 'sparkles-outline' | 'stats-chart-outline'
+    icon: typeof Camera
     title: string
     desc: string
     action: FeatureAction
     hint: string
 }> = [
     {
-        icon: 'camera-outline',
+        icon: Camera,
         title: 'Snap Your Meal',
         desc: 'Point your camera at any plate for instant logging',
         action: 'analyze',
         hint: 'Tap to start',
     },
     {
-        icon: 'sparkles-outline',
+        icon: Sparkles,
         title: 'AI Nutrition',
         desc: 'Get calorie and macro estimates in seconds',
         action: 'ai-info',
         hint: 'Learn more',
     },
     {
-        icon: 'stats-chart-outline',
+        icon: TrendingUp,
         title: 'Track Daily Goals',
         desc: 'See progress toward your calorie targets',
         action: 'dashboard',
@@ -178,34 +177,41 @@ export default function LandingScreen() {
             </Animated.View>
 
             <Animated.View style={[s.heroWrap, heroStyle]}>
-                <Text style={s.heroTitle}>{APP_NAME}</Text>
-                <Text style={s.heroTagline}>{APP_TAGLINE}</Text>
+                <Text style={s.heroEyebrow}>{APP_NAME}</Text>
+                <View style={s.taglineBox}>
+                    <Text style={s.heroTagline}>{APP_TAGLINE}</Text>
+                </View>
                 <Text style={s.heroDesc}>{APP_DESCRIPTION}</Text>
             </Animated.View>
 
             <Animated.View style={[s.featuresWrap, featuresStyle]}>
-                {FEATURES.map((feat) => (
-                    <Pressable
-                        key={feat.action}
-                        onPress={() => handleFeaturePress(feat.action)}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${feat.title}. ${feat.hint}`}
-                        style={({ pressed }) => [
-                            s.featureRow,
-                            pressed && s.featureRowPressed,
-                        ]}
-                    >
-                        <View style={s.featureIconWrap}>
-                            <Ionicons name={feat.icon} size={18} color={ACCENT} />
-                        </View>
-                        <View style={s.featureTextWrap}>
-                            <Text style={s.featureTitle}>{feat.title}</Text>
-                            <Text style={s.featureDesc}>{feat.desc}</Text>
-                            <Text style={s.featureHint}>{feat.hint}</Text>
-                        </View>
-                        <ChevronRight size={18} color={ACCENT} strokeWidth={2.2} />
-                    </Pressable>
-                ))}
+                {FEATURES.map((feat) => {
+                    const Icon = feat.icon
+                    return (
+                        <Pressable
+                            key={feat.action}
+                            onPress={() => handleFeaturePress(feat.action)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`${feat.title}. ${feat.hint}`}
+                            style={({ pressed }) => [
+                                s.featureRow,
+                                pressed && s.featureRowPressed,
+                            ]}
+                        >
+                            <View style={s.featureIconWrap}>
+                                <Icon size={19} color={ACCENT} strokeWidth={2.2} />
+                            </View>
+                            <View style={s.featureTextWrap}>
+                                <Text style={s.featureTitle}>{feat.title}</Text>
+                                <Text style={s.featureDesc}>{feat.desc}</Text>
+                                <Text style={s.featureHint}>{feat.hint}</Text>
+                            </View>
+                            <View style={s.chevronWrap}>
+                                <ChevronRight size={16} color={ACCENT} strokeWidth={2.5} />
+                            </View>
+                        </Pressable>
+                    )
+                })}
             </Animated.View>
 
             <Animated.View style={[s.footer, footerStyle, { paddingBottom: insets.bottom + 20 }]}>
@@ -327,28 +333,38 @@ const s = StyleSheet.create({
     },
     heroWrap: {
         paddingHorizontal: 24,
-        paddingTop: 36,
-        gap: 10,
+        paddingTop: 32,
+        gap: 12,
     },
-    heroTitle: {
-        color: '#fff',
-        fontSize: 34,
-        fontWeight: '800',
-        letterSpacing: -0.8,
-        lineHeight: 40,
+    heroEyebrow: {
+        color: 'rgba(255,255,255,0.55)',
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 1.2,
+        textTransform: 'uppercase',
+    },
+    taglineBox: {
+        alignSelf: 'flex-start',
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 14,
+        backgroundColor: ACCENT_DIM,
+        borderWidth: 1,
+        borderColor: ACCENT_BORDER,
     },
     heroTagline: {
         color: ACCENT,
-        fontSize: 15,
-        fontWeight: '600',
-        letterSpacing: 0.1,
+        fontSize: 20,
+        fontWeight: '800',
+        letterSpacing: -0.3,
+        lineHeight: 26,
+        maxWidth: SW - 80,
     },
     heroDesc: {
         color: 'rgba(255,255,255,0.48)',
         fontSize: 14,
         lineHeight: 21,
         maxWidth: 320,
-        marginTop: 2,
     },
     featuresWrap: {
         flex: 1,
@@ -360,16 +376,32 @@ const s = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 14,
-        backgroundColor: 'rgba(255,255,255,0.04)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
         borderWidth: 1,
         borderColor: BORDER,
-        borderRadius: 14,
-        paddingVertical: 14,
+        borderRadius: 16,
+        paddingVertical: 15,
         paddingHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 3,
     },
     featureRowPressed: {
         backgroundColor: ACCENT_DIM,
         borderColor: ACCENT_BORDER,
+        transform: [{ scale: 0.99 }],
+    },
+    chevronWrap: {
+        width: 32,
+        height: 32,
+        borderRadius: 999,
+        backgroundColor: ACCENT_DIM,
+        borderWidth: 1,
+        borderColor: 'rgba(34,197,94,0.22)',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     featureIconWrap: {
         width: 38,
