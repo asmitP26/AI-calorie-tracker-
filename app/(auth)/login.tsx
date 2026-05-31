@@ -24,7 +24,7 @@ import { Text } from '@/components/ui/Text'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseEnabled } from '@/lib/supabase'
 import { track } from '@/lib/analytics'
 import { ACCENT, ACCENT_DIM, ACCENT_BORDER, BG, SURFACE, BORDER, ERROR, ERROR_DIM, TEXT_SECONDARY } from '@/lib/theme'
 import { APP_NAME, APP_SCHEME } from '@/lib/constants'
@@ -110,6 +110,11 @@ export default function LoginScreen() {
     }
     setLoading(true); setError(null)
     track('login_started')
+    if (!isSupabaseEnabled) {
+      setLoading(false)
+      setError('Sign-in is unavailable without a backend. Use "Skip to Home" to explore the app.')
+      return
+    }
     const { error: err } = await supabase.auth.signInWithOtp({ email: normalized })
     setLoading(false)
     if (err) { setError(err.message); return }
@@ -126,6 +131,11 @@ export default function LoginScreen() {
       return
     }
     setLoading(true); setError(null)
+    if (!isSupabaseEnabled) {
+      setLoading(false)
+      setError('Sign-in is unavailable without a backend. Use "Skip to Home" to explore the app.')
+      return
+    }
     const { error: err } = await supabase.auth.verifyOtp({
       email: normalizeEmail(email),
       token: code,
@@ -171,6 +181,11 @@ export default function LoginScreen() {
   const handleResend = async () => {
     if (cooldown > 0) return
     setLoading(true); setError(null)
+    if (!isSupabaseEnabled) {
+      setLoading(false)
+      setError('Sign-in is unavailable without a backend. Use "Skip to Home" to explore the app.')
+      return
+    }
     const { error: err } = await supabase.auth.signInWithOtp({ email: normalizeEmail(email) })
     setLoading(false)
     if (err) { setError(err.message); return }

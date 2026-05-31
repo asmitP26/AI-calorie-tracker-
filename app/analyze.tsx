@@ -112,7 +112,7 @@ export default function AnalyzeScreen() {
               <View style={s.previewOverlay}>
                 <Sparkles size={32} color={ACCENT} strokeWidth={2} />
                 <ActivityIndicator color={ACCENT} style={{ marginTop: 12 }} />
-                <Text style={s.overlayText}>Analyzing with AI...</Text>
+                <Text style={s.overlayText}>Calculating with AI...</Text>
               </View>
             )}
             {!analyzing && (
@@ -226,7 +226,7 @@ const s = StyleSheet.create({
   },
   previewOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgba(13,13,13,0.82)',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,

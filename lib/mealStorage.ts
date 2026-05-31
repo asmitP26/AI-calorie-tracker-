@@ -92,6 +92,17 @@ export async function clearSavedMeals(): Promise<void> {
   }
 }
 
+export async function deleteMeal(id: string): Promise<void> {
+  try {
+    const existing = await getSavedMeals()
+    const next = existing.filter((m) => m.id !== id)
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  } catch (error) {
+    console.warn('[mealStorage] deleteMeal failed:', error)
+    throw error
+  }
+}
+
 export async function getTodayNutritionSummary(): Promise<TodayNutritionSummary> {
   try {
     const meals = await getSavedMeals()

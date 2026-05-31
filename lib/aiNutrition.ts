@@ -4,6 +4,8 @@ import { createMockMealAnalysis } from './mockNutrition'
 
 const GEMINI_MODEL = 'gemini-2.0-flash'
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models'
+/** Max wait for a live Gemini response before falling back to demo data. */
+const AI_REQUEST_TIMEOUT_MS = 12_000
 
 const MIN_MEAL_CALORIES = 80
 const MAX_MEAL_CALORIES = 2800
@@ -356,6 +358,25 @@ async function callGeminiVision(
   return mapToMealAnalysis(parsed as RawGeminiPayload, imageUri)
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${ms}ms`)),
+      ms,
+    )
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timer)
+        reject(error)
+      },
+    )
+  })
+}
+
 function mockFallback(imageUri: string, reason: string): MealAnalysis {
   console.warn(`[Cal AI] Using mock nutrition analysis: ${reason}`)
   return createMockMealAnalysis(imageUri)
@@ -374,7 +395,11 @@ export async function analyzeMealImage(imageUri: string): Promise<MealAnalysis> 
 
   try {
     const { base64, mimeType } = await imageUriToBase64(imageUri)
-    return await callGeminiVision(apiKey, imageUri, base64, mimeType)
+    return await withTimeout(
+      callGeminiVision(apiKey, imageUri, base64, mimeType),
+      AI_REQUEST_TIMEOUT_MS,
+      'Gemini vision request',
+    )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown error'
     return mockFallback(imageUri, message)

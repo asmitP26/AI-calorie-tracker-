@@ -13,6 +13,7 @@ import {
 import { Text } from '@/components/ui/Text'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { AlertModal } from '@/components/ui/AppModal'
 import { EstimateDisclaimer } from '@/components/meal/MealUi'
 import {
   ACCENT,
@@ -24,8 +25,9 @@ import {
   TEXT_SECONDARY,
   TEXT_TERTIARY,
 } from '@/lib/theme'
-import { getMealById } from '@/lib/mealStorage'
+import { deleteMeal, getMealById } from '@/lib/mealStorage'
 import type { SavedMeal } from '@/lib/mealTypes'
+import { useToast } from '@/contexts/ToastContext'
 
 const PRIMARY_MACROS = [
   { key: 'protein' as const, label: 'Protein', unit: 'g', icon: Beef, color: '#3B82F6' },
@@ -35,9 +37,11 @@ const PRIMARY_MACROS = [
 
 export default function ResultScreen() {
   const insets = useSafeAreaInsets()
+  const { showToast } = useToast()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [meal, setMeal] = useState<SavedMeal | null>(null)
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const loadMeal = useCallback(async () => {
     if (!id) {
@@ -56,6 +60,19 @@ export default function ResultScreen() {
       loadMeal()
     }, [loadMeal]),
   )
+
+  const handleDelete = async () => {
+    if (!meal) return
+    try {
+      await deleteMeal(meal.id)
+      setConfirmDelete(false)
+      showToast('Meal removed', 'success')
+      router.replace('/(tabs)/explore')
+    } catch {
+      setConfirmDelete(false)
+      showToast('Could not delete meal', 'error')
+    }
+  }
 
   if (loading) {
     return (
@@ -135,7 +152,7 @@ export default function ResultScreen() {
         {meal.analysisSource === 'mock' && (
           <View style={s.fallbackBanner}>
             <Text style={s.fallbackText}>
-              Demo estimate - AI vision was unavailable. Values are illustrative.
+              Demo Result (AI unavailable) — values are illustrative estimates.
             </Text>
           </View>
         )}
@@ -196,8 +213,25 @@ export default function ResultScreen() {
             fullWidth
             onPress={() => router.push('/analyze')}
           />
+          <Button
+            label="Delete Meal"
+            variant="outline"
+            fullWidth
+            onPress={() => setConfirmDelete(true)}
+          />
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={confirmDelete}
+        title="Delete this meal?"
+        message={`"${meal.mealName}" will be removed from your history.`}
+        buttons={[
+          { text: 'Cancel', style: 'cancel', onPress: () => setConfirmDelete(false) },
+          { text: 'Delete', style: 'destructive', onPress: handleDelete },
+        ]}
+        onDismiss={() => setConfirmDelete(false)}
+      />
     </View>
   )
 }

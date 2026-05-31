@@ -40,7 +40,7 @@ import i18n, { initI18n } from '@/lib/i18n'
 import OfflineBanner from '@/components/OfflineBanner'
 import OfflineOverlay from '@/components/OfflineOverlay'
 import { Text } from '@/components/ui/Text'
-import { BG } from '@/lib/theme'
+import { BG, TEXT_PRIMARY, TEXT_SECONDARY } from '@/lib/theme'
 
 // ─── Error boundary ───────────────────────────────────────────────────────────
 // React requires a class component to catch render errors — hooks cannot do this.
@@ -80,8 +80,8 @@ const eb = StyleSheet.create({
     flex: 1, backgroundColor: BG,
     alignItems: 'center', justifyContent: 'center', padding: 32,
   },
-  title: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 10, textAlign: 'center' },
-  subtitle: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 22 },
+  title: { color: TEXT_PRIMARY, fontSize: 18, fontWeight: '700', marginBottom: 10, textAlign: 'center' },
+  subtitle: { color: TEXT_SECONDARY, fontSize: 14, textAlign: 'center', lineHeight: 22 },
 })
 
 // ─── Theme ────────────────────────────────────────────────────────────────────

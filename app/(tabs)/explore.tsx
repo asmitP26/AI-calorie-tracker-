@@ -12,33 +12,39 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
     Camera,
     ChevronRight,
-    Clock,
     Flame,
     Sparkles,
+    Trash2,
 } from 'lucide-react-native'
 import { Text } from '@/components/ui/Text'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { AlertModal } from '@/components/ui/AppModal'
 import { EmptyMealsState, EstimateDisclaimer } from '@/components/meal/MealUi'
 import {
     ACCENT,
     ACCENT_DIM,
     BG,
     BORDER,
-    SURFACE,
+    ERROR,
+    SURFACE2,
     TEXT_PRIMARY,
     TEXT_SECONDARY,
     TEXT_TERTIARY,
 } from '@/lib/theme'
 import { TAB_BAR_CLEARANCE } from '@/components/TabBar'
-import { getSavedMeals } from '@/lib/mealStorage'
+import { clearSavedMeals, deleteMeal, getSavedMeals } from '@/lib/mealStorage'
 import type { SavedMeal } from '@/lib/mealTypes'
 import { formatRelativeDate } from '@/lib/utils'
+import { useToast } from '@/contexts/ToastContext'
 
 export default function ExploreScreen() {
     const insets = useSafeAreaInsets()
+    const { showToast } = useToast()
     const [refreshing, setRefreshing] = useState(false)
     const [meals, setMeals] = useState<SavedMeal[]>([])
+    const [confirmClear, setConfirmClear] = useState(false)
+    const [mealToDelete, setMealToDelete] = useState<SavedMeal | null>(null)
 
     const loadMeals = useCallback(async () => {
         const saved = await getSavedMeals()
@@ -55,6 +61,25 @@ export default function ExploreScreen() {
         setRefreshing(true)
         await loadMeals()
         setRefreshing(false)
+    }
+
+    const handleClearAll = async () => {
+        await clearSavedMeals()
+        setConfirmClear(false)
+        await loadMeals()
+        showToast('Meal history cleared', 'success')
+    }
+
+    const handleDeleteMeal = async () => {
+        if (!mealToDelete) return
+        try {
+            await deleteMeal(mealToDelete.id)
+            setMealToDelete(null)
+            await loadMeals()
+            showToast('Meal removed', 'success')
+        } catch {
+            showToast('Could not delete meal', 'error')
+        }
     }
 
     const stats = useMemo(() => {
@@ -75,8 +100,20 @@ export default function ExploreScreen() {
         >
             {/* Header */}
             <View style={s.header}>
-                <Text style={s.title}>Meal History</Text>
-                <Text style={s.subtitle}>Every meal you have analyzed</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={s.title}>Meal History</Text>
+                    <Text style={s.subtitle}>Every meal you have analyzed</Text>
+                </View>
+                {meals.length > 0 && (
+                    <Pressable
+                        onPress={() => setConfirmClear(true)}
+                        hitSlop={8}
+                        style={({ pressed }) => [s.clearBtn, pressed && { opacity: 0.7 }]}
+                    >
+                        <Trash2 size={18} color={ERROR} strokeWidth={2} />
+                        <Text style={s.clearBtnText}>Clear</Text>
+                    </Pressable>
+                )}
             </View>
 
             {/* Stats Row */}
@@ -111,6 +148,7 @@ export default function ExploreScreen() {
                     <Pressable
                         key={meal.id}
                         onPress={() => router.push(`/result/${meal.id}`)}
+                        onLongPress={() => setMealToDelete(meal)}
                         style={({ pressed }) => [pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
                     >
                         <Card style={s.mealCard}>
@@ -129,6 +167,13 @@ export default function ExploreScreen() {
                                     </View>
                                 </View>
                             </View>
+                            <Pressable
+                                onPress={() => setMealToDelete(meal)}
+                                hitSlop={8}
+                                style={({ pressed }) => [s.deleteBtn, pressed && { opacity: 0.6 }]}
+                            >
+                                <Trash2 size={16} color={TEXT_TERTIARY} strokeWidth={2} />
+                            </Pressable>
                             <ChevronRight size={18} color={TEXT_TERTIARY} />
                         </Card>
                     </Pressable>
@@ -146,15 +191,39 @@ export default function ExploreScreen() {
             )}
 
             <EstimateDisclaimer />
+
+            <AlertModal
+                visible={confirmClear}
+                title="Clear all history?"
+                message="This removes every saved meal scan. This cannot be undone."
+                buttons={[
+                    { text: 'Cancel', style: 'cancel', onPress: () => setConfirmClear(false) },
+                    { text: 'Clear all', style: 'destructive', onPress: handleClearAll },
+                ]}
+                onDismiss={() => setConfirmClear(false)}
+            />
+
+            <AlertModal
+                visible={mealToDelete != null}
+                title="Delete this meal?"
+                message={mealToDelete ? `"${mealToDelete.mealName}" will be removed from your history.` : undefined}
+                buttons={[
+                    { text: 'Cancel', style: 'cancel', onPress: () => setMealToDelete(null) },
+                    { text: 'Delete', style: 'destructive', onPress: handleDeleteMeal },
+                ]}
+                onDismiss={() => setMealToDelete(null)}
+            />
         </ScrollView>
     )
 }
 
 const s = StyleSheet.create({
     container: { paddingHorizontal: 20, gap: 14 },
-    header: { gap: 4, marginBottom: 4 },
+    header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
     title: { fontSize: 28, fontWeight: '800', color: TEXT_PRIMARY, letterSpacing: -0.8 },
     subtitle: { fontSize: 14, color: TEXT_SECONDARY },
+    clearBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingTop: 6 },
+    clearBtnText: { fontSize: 13, fontWeight: '600', color: ERROR },
     statsRow: { flexDirection: 'row', gap: 10 },
     statCard: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 14 },
     statValue: { fontSize: 20, fontWeight: '800', color: TEXT_PRIMARY },
@@ -169,7 +238,10 @@ const s = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 14,
-        backgroundColor: '#F1F3F5',
+        backgroundColor: SURFACE2,
+    },
+    deleteBtn: {
+        padding: 6,
     },
     mealBody: { flex: 1, gap: 4 },
     mealName: { fontSize: 15, fontWeight: '700', color: TEXT_PRIMARY },

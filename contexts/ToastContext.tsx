@@ -2,7 +2,7 @@ import React, { createContext, useContext, useRef, useState, useCallback } from 
 import { Animated, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/Text'
-import { SURFACE2, SUCCESS, ERROR, ACCENT, BORDER, TAB_HEIGHT } from '@/lib/theme'
+import { SURFACE2, SUCCESS, ERROR, ACCENT, BORDER, TAB_HEIGHT, TEXT_PRIMARY } from '@/lib/theme'
 
 export type ToastType = 'success' | 'error' | 'info'
 
@@ -131,7 +131,7 @@ const s = StyleSheet.create({
     message: {
         flex: 1,
         fontSize: 13.5,
-        color: '#fff',
+        color: TEXT_PRIMARY,
         fontWeight: '500',
         lineHeight: 19,
     },
