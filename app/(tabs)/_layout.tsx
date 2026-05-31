@@ -35,7 +35,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          tabBarLabel: 'Explore',
+          tabBarLabel: 'History',
           tabBarIcon: ({ color, size }) => (
             <Compass size={size} color={color} strokeWidth={1.6} />
           ),
@@ -45,7 +45,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="activity"
         options={{
-          tabBarLabel: 'Activity',
+          tabBarLabel: 'Insights',
           tabBarIcon: ({ color, size }) => (
             <Bell size={size} color={color} strokeWidth={1.6} />
           ),

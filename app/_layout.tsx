@@ -248,6 +248,8 @@ function RootLayout() {
                         Accessible only when signed in + onboarding done. */}
                         <Stack.Protected guard={!!isAuthed && onboardingCompleted === true}>
                           <Stack.Screen name="(tabs)" />
+                          <Stack.Screen name="analyze" />
+                          <Stack.Screen name="result/[id]" />
                           <Stack.Screen name="detail/[id]" />
                           <Stack.Screen name="settings" />
                           <Stack.Screen name="support" />
