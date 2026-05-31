@@ -24,9 +24,9 @@ const { width: SW, height: SH } = Dimensions.get('window')
 // ─── Feature items shown on the landing page ──────────────────────────────────
 // Update these to match your app's value props.
 const FEATURES = [
-    { icon: 'shield-checkmark-outline' as const, title: 'Secure by Default', desc: 'End-to-end encrypted auth' },
-    { icon: 'flash-outline' as const, title: 'Blazing Fast', desc: 'Optimized for performance' },
-    { icon: 'cloud-done-outline' as const, title: 'Always in Sync', desc: 'Real-time data across devices' },
+    { icon: 'camera-outline' as const, title: 'Snap Your Meal', desc: 'Point your camera at any plate for instant logging' },
+    { icon: 'sparkles-outline' as const, title: 'AI Nutrition', desc: 'Get calorie and macro estimates in seconds' },
+    { icon: 'stats-chart-outline' as const, title: 'Track Daily Goals', desc: 'See progress toward your calorie targets' },
 ]
 
 export default function LandingScreen() {
@@ -95,7 +95,7 @@ export default function LandingScreen() {
             {/* Background gradient */}
             <LinearGradient
                 pointerEvents="none"
-                colors={[BG, '#0b1414', '#081010', BG]}
+                colors={[BG, '#0b140b', '#081008', BG]}
                 locations={[0, 0.3, 0.6, 1]}
                 style={StyleSheet.absoluteFillObject}
             />
